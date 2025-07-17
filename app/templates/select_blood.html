@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Select Blood Group</title>
+    <style>
+      body,
+      html {
+        height: 100%;
+        margin: 0;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-image: url("/static/bfn1.jpg");
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+      }
+
+      .container {
+        background-color: rgba(255, 255, 255, 0.1);
+        padding: 40px;
+        border-radius: 10px;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+        width: 300px;
+        text-align: center;
+        margin: 20px;
+      }
+
+      h2 {
+        color: #b22222;
+        margin-bottom: 20px;
+      }
+
+      select,
+      button {
+        width: 100%;
+        padding: 15px;
+        margin: 15px 0;
+        border-radius: 5px;
+        border: 1px solid #ddd;
+        font-size: 18px;
+      }
+
+      .blood-group {
+        display: inline-block;
+        padding: 12px 24px;
+        margin: 10px;
+        border-radius: 25px;
+        background-color: rgba(247, 249, 252, 0.2);
+        border: 2px solid #ddd;
+        cursor: pointer;
+        transition: all 0.3s;
+      }
+
+      .blood-group.selected {
+        border-color: #b22222;
+        background-color: rgba(255, 234, 234, 0.8);
+      }
+
+      .blood-group.disabled {
+        background-color: rgba(224, 224, 224, 0.8);
+        border-color: #ddd;
+        cursor: not-allowed;
+      }
+
+      button {
+        background-color: #b22222;
+        color: white;
+        border: none;
+        font-size: 18px;
+      }
+
+      button:hover {
+        background-color: #a12020;
+      }
+
+      #selectedBloodType {
+        margin-top: 15px;
+        font-size: 18px;
+        color: #b22222;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h2>Select Blood Group</h2>
+
+      <label for="patientBloodGroup">Patient Blood Group:</label>
+      <select id="patientBloodGroup" onchange="autoSelectBloodGroups()">
+        <option value="">Select Patient Blood Group</option>
+        <option value="A+">A+</option>
+        <option value="A-">A-</option>
+        <option value="B+">B+</option>
+        <option value="B-">B-</option>
+        <option value="O+">O+</option>
+        <option value="O-">O-</option>
+        <option value="AB+">AB+</option>
+        <option value="AB-">AB-</option>
+      </select>
+
+      <div id="selectedBloodType">Requested Blood Type: None</div>
+
+      <div id="bloodGroups">
+        {% for bg in ['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'] %}
+        <div
+          class="blood-group"
+          data-group="{{ bg }}"
+          onclick="toggleSelect(this)"
+        >
+          {{ bg }}
+        </div>
+        {% endfor %}
+      </div>
+
+      <button onclick="confirmSelection()">Confirm</button>
+
+      <form id="bloodGroupForm" method="POST" style="display: none">
+        <input type="hidden" name="selected_groups" id="selectedGroupsInput" />
+      </form>
+    </div>
+
+    <script>
+      const compatibleBloodGroups = {
+        "A+": ["A+", "A-", "O+", "O-"],
+        "A-": ["A-", "O-"],
+        "B+": ["B+", "B-", "O+", "O-"],
+        "B-": ["B-", "O-"],
+        "O+": ["O+", "O-"],
+        "O-": ["O-"],
+        "AB+": ["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"],
+        "AB-": ["A-", "B-", "O-", "AB-"],
+      };
+
+      function autoSelectBloodGroups() {
+        const patientBloodGroup =
+          document.getElementById("patientBloodGroup").value;
+        const bloodGroupElements = document.querySelectorAll(".blood-group");
+
+        document.getElementById(
+          "selectedBloodType"
+        ).innerText = `Requested Blood Type: ${patientBloodGroup || "None"}`;
+
+        bloodGroupElements.forEach((el) => {
+          const group = el.getAttribute("data-group");
+          el.classList.remove("disabled", "selected");
+          if (compatibleBloodGroups[patientBloodGroup]?.includes(group)) {
+            el.classList.add("selected");
+          } else {
+            el.classList.add("disabled");
+          }
+        });
+      }
+
+      function toggleSelect(el) {
+        if (!el.classList.contains("disabled")) {
+          el.classList.toggle("selected");
+        }
+      }
+
+      function confirmSelection() {
+        const selectedGroups = Array.from(
+          document.querySelectorAll(".blood-group.selected")
+        ).map((el) => el.getAttribute("data-group"));
+
+        if (selectedGroups.length > 0) {
+          document.getElementById("selectedGroupsInput").value =
+            selectedGroups.join(",");
+          document.getElementById("bloodGroupForm").submit();
+        } else {
+          alert("Please select a compatible blood group.");
+        }
+      }
+    </script>
+  </body>
+</html>

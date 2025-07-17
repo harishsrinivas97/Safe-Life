@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Blood In Need - Create Account</title>
+    <style>
+      body,
+      html {
+        height: 100%;
+        margin: 0;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-color: #f7f9fc;
+        background-image: url("bfn.jpg");
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+      }
+
+      .container {
+        width: 400px;
+        padding: 40px;
+        background-color: rgba(255, 255, 255, 0.2);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        border-radius: 15px;
+        text-align: center;
+        animation: slideIn 0.8s ease-out forwards;
+      }
+
+      h2 {
+        color: #b22222;
+        margin-bottom: 20px;
+        font-weight: 600;
+      }
+
+      input[type="text"],
+      input[type="email"],
+      input[type="tel"],
+      input[type="password"] {
+        width: 100%;
+        padding: 12px;
+        margin: 10px 0;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        outline: none;
+        transition: border 0.3s ease;
+        background-color: rgba(255, 255, 255, 0.9);
+      }
+
+      input:focus {
+        border: 1px solid #b22222;
+      }
+
+      button {
+        width: 100%;
+        padding: 12px;
+        margin-top: 10px;
+        background-color: #b22222;
+        color: white;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: background-color 0.3s ease, transform 0.2s ease;
+      }
+
+      button:hover {
+        background-color: #a12020;
+        transform: translateY(-2px);
+      }
+
+      @keyframes slideIn {
+        0% {
+          opacity: 0;
+          transform: translateY(50px);
+        }
+        100% {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h2>Create Account</h2>
+      {% if errors %}
+      <div style="color: red">{{ errors|join('<br />')|safe }}</div>
+      {% endif %}
+      <form method="POST">
+        <input type="text" name="name" placeholder="Full Name" required /><br />
+        <input
+          type="email"
+          name="email"
+          placeholder="Email Address"
+          required
+        /><br />
+        <input
+          type="tel"
+          name="phone_number"
+          placeholder="Phone Number (10 digits)"
+          required
+          pattern="\d{10}"
+        /><br />
+        <input type="text" name="state" placeholder="State" required /><br />
+        <input
+          type="password"
+          name="password"
+          placeholder="Password"
+          required
+        /><br />
+        <button type="submit">Confirm</button>
+      </form>
+
+      <!-- ✅ Login Redirect -->
+      <p style="margin-top: 15px; color: #333">
+        Already have an account?
+        <a
+          href="{{ url_for('routes.login') }}"
+          style="color: #b22222; font-weight: bold"
+          >Login here</a
+        >
+      </p>
+    </div>
+  </body>
+</html>

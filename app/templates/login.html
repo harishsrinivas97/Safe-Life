@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Blood In Need - Login</title>
+    <style>
+      body,
+      html {
+        height: 100%;
+        margin: 0;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-color: #f7f9fc;
+        background-image: url("/static/bfn.jpg");
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+      }
+
+      .login-container {
+        width: 420px;
+        max-width: 90%;
+        padding: 40px;
+        background-color: rgba(255, 255, 255, 0.2);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        border-radius: 15px;
+        text-align: center;
+        animation: slideIn 0.8s ease-out forwards;
+      }
+
+      h2 {
+        color: #b22222;
+        margin-bottom: 20px;
+        font-weight: 600;
+      }
+
+      input[type="text"],
+      input[type="password"] {
+        width: 100%;
+        padding: 14px;
+        margin: 12px 0;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        outline: none;
+        transition: border 0.3s ease;
+      }
+
+      input:focus {
+        border: 1px solid #b22222;
+      }
+
+      button {
+        width: 100%;
+        padding: 14px;
+        margin-top: 10px;
+        background-color: #b22222;
+        color: white;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: background-color 0.3s ease, transform 0.2s ease;
+      }
+
+      button:hover {
+        background-color: #a12020;
+        transform: translateY(-2px);
+      }
+
+      .password-options {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin: 10px 0;
+        font-size: 0.9rem;
+      }
+
+      .forgot-password {
+        color: #b22222;
+        text-decoration: none;
+      }
+
+      .forgot-password:hover {
+        text-decoration: underline;
+      }
+
+      .account-message {
+        margin: 15px 0;
+        color: #555;
+        font-size: 0.9rem;
+        text-align: left;
+      }
+
+      .create-account-link {
+        color: #b22222;
+        font-weight: bold;
+        text-decoration: none;
+        cursor: pointer;
+      }
+
+      .create-account-link:hover {
+        text-decoration: underline;
+      }
+
+      @keyframes slideIn {
+        0% {
+          opacity: 0;
+          transform: translateY(50px);
+        }
+        100% {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="login-container">
+      <h2>Login</h2>
+
+      {% if errors %}
+      <div style="color: red">{{ errors|join('<br />')|safe }}</div>
+      {% endif %}
+
+      <form method="POST">
+        <input
+          type="text"
+          name="phone_number"
+          placeholder="Phone Number"
+          required
+        />
+        <input
+          type="password"
+          name="password"
+          placeholder="Password"
+          required
+          id="password"
+        />
+
+        <div class="password-options">
+          <label
+            ><input type="checkbox" onclick="togglePassword()" /> Show
+            Password</label
+          >
+          <a href="{{ url_for('reset_routes.forgot_password') }}">Forgot Password?</a>
+        </div>
+
+        <button type="submit">Login</button>
+
+        <p class="account-message">
+          Don't have an account?
+          <a href="{{ url_for('routes.register') }}" class="create-account-link"
+            >Create Account</a
+          >
+        </p>
+      </form>
+    </div>
+
+    <script>
+      function togglePassword() {
+        const passwordInput = document.getElementById("password");
+        passwordInput.type =
+          passwordInput.type === "password" ? "text" : "password";
+      }
+    </script>
+  </body>
+</html>
