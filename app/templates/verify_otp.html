@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="csrf-token" content="{{ csrf_token() }}" />
+  <title>Verify OTP | BloodNeed</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Merriweather:wght@700;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+  <style>
+    .otp-input-group { display: flex; gap: 10px; justify-content: center; margin: 24px 0; }
+    .otp-digit {
+      width: 52px; height: 60px;
+      text-align: center; font-size: 1.5rem; font-weight: 700;
+      border: 2px solid var(--border); border-radius: var(--radius);
+      font-family: var(--font-head); color: var(--red);
+      transition: border-color var(--transition), box-shadow var(--transition);
+      outline: none;
+    }
+    .otp-digit:focus { border-color: var(--red); box-shadow: 0 0 0 3px rgba(192,57,43,0.12); }
+    .timer { text-align: center; font-size: 0.9rem; color: var(--text-muted); margin-bottom: 20px; }
+    .timer span { font-weight: 700; color: var(--red); }
+  </style>
+</head>
+<body>
+  {% with messages = get_flashed_messages(with_categories=true) %}{% if messages %}
+  <div class="flash-container">{% for c,m in messages %}<div class="flash flash-{{c if c in ['success','danger','warning','info'] else 'info'}}"><span class="flash-icon">{% if c=='success'%}✅{% elif c=='danger'%}❌{% elif c=='warning'%}⚠️{% else %}ℹ️{% endif %}</span><span class="flash-text">{{m}}</span><span class="flash-close">×</span></div>{% endfor %}</div>
+  {% endif %}{% endwith %}
+
+  <div class="auth-page">
+    <div class="auth-panel-left">
+      <div>
+        <div class="auth-logo">🩸 BloodNeed</div>
+        <p class="auth-tagline">Check your email inbox for the 6-digit OTP we just sent.</p>
+        <div class="auth-features">
+          <div class="auth-feature"><div class="auth-feature-icon">📬</div><span>Check your spam/junk folder too</span></div>
+          <div class="auth-feature"><div class="auth-feature-icon">⏰</div><span>OTP is valid for 5 minutes only</span></div>
+          <div class="auth-feature"><div class="auth-feature-icon">🔒</div><span>Never share this OTP with anyone</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="auth-panel-right">
+      <div class="auth-form-box page-animate">
+        <h1 class="auth-form-title">Enter Your OTP</h1>
+        <p class="auth-form-subtitle">
+          OTP sent to <strong>{{ email[:3] }}***{{ email.split('@')[1] if '@' in email else '' }}</strong>
+        </p>
+
+        {% if errors %}<ul class="form-error-list">{% for e in errors %}<li>{{e}}</li>{% endfor %}</ul>{% endif %}
+
+        <form method="POST" action="{{ url_for('auth.verify_otp_view') }}" id="otpForm" novalidate>
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+          <input type="hidden" name="otp" id="otpHidden" />
+
+          <div class="otp-input-group" aria-label="OTP input">
+            {% for i in range(6) %}
+            <input type="text" class="otp-digit" maxlength="1" pattern="[0-9]"
+                   inputmode="numeric" autocomplete="one-time-code"
+                   aria-label="OTP digit {{ i+1 }}" />
+            {% endfor %}
+          </div>
+
+          <div class="timer">OTP expires in <span id="countdown">05:00</span></div>
+
+          <button type="submit" class="btn btn-primary btn-block btn-lg" id="verifyBtn">
+            Verify OTP →
+          </button>
+        </form>
+
+        <div class="auth-footer mt-16">
+          <a href="{{ url_for('auth.forgot') }}">← Request a new OTP</a>
+          &nbsp;·&nbsp;
+          <a href="{{ url_for('auth.login') }}">Back to Login</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  <script>
+    // OTP digit auto-advance
+    const digits = document.querySelectorAll('.otp-digit');
+    digits.forEach((d, i) => {
+      d.addEventListener('input', () => {
+        d.value = d.value.replace(/\D/g, '');
+        if (d.value && i < digits.length - 1) digits[i+1].focus();
+        updateHidden();
+      });
+      d.addEventListener('keydown', e => {
+        if (e.key === 'Backspace' && !d.value && i > 0) digits[i-1].focus();
+      });
+      d.addEventListener('paste', e => {
+        e.preventDefault();
+        const text = e.clipboardData.getData('text').replace(/\D/g,'');
+        [...text.slice(0,6)].forEach((ch, j) => { if (digits[i+j]) digits[i+j].value = ch; });
+        if (digits[Math.min(i+text.length, 5)]) digits[Math.min(i+text.length, 5)].focus();
+        updateHidden();
+      });
+    });
+    function updateHidden() {
+      document.getElementById('otpHidden').value = [...digits].map(d=>d.value).join('');
+    }
+    document.getElementById('otpForm').addEventListener('submit', (e) => {
+      const otp = document.getElementById('otpHidden').value;
+      if (otp.length < 6) { e.preventDefault(); alert('Please enter the complete 6-digit OTP.'); }
+    });
+
+    // Countdown
+    let seconds = 300;
+    const el = document.getElementById('countdown');
+    const t = setInterval(() => {
+      seconds--;
+      const m = String(Math.floor(seconds/60)).padStart(2,'0');
+      const s = String(seconds % 60).padStart(2,'0');
+      el.textContent = `${m}:${s}`;
+      if (seconds <= 60) el.style.color = 'var(--danger)';
+      if (seconds <= 0) {
+        clearInterval(t);
+        el.textContent = 'Expired';
+        document.getElementById('verifyBtn').disabled = true;
+      }
+    }, 1000);
+  </script>
+</body>
+</html>

@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+{% block title %}Complete Profile{% endblock %}
+
+{% block content %}
+<div class="container-md">
+  <div class="page-header">
+    <h1 class="page-title">📝 Complete Your Profile</h1>
+    <p class="page-subtitle">This information helps us find the right donors and match you with blood requests.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">Personal & Medical Information</span>
+      <span class="badge badge-{{ 'accepted' if session.get('profile_complete') else 'pending' }}">
+        {{ 'Complete' if session.get('profile_complete') else 'Incomplete' }}
+      </span>
+    </div>
+    <div class="card-body">
+
+      {% if errors %}
+      <ul class="form-error-list" role="alert">
+        {% for e in errors %}<li>{{ e }}</li>{% endfor %}
+      </ul>
+      {% endif %}
+
+      <form method="POST" action="{{ url_for('profile.details') }}" novalidate>
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+
+        <div class="grid-2">
+          <div class="form-group">
+            <label class="form-label" for="age">Age <span class="required">*</span></label>
+            <input type="number" id="age" name="age" class="form-input"
+                   placeholder="e.g. 25" min="1" max="120" required
+                   value="{{ user.age if user and user.age else '' }}" />
+            <p class="form-hint">Donors must be 18–65 years old</p>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="gender">Gender <span class="required">*</span></label>
+            <select id="gender" name="gender" class="form-select" required>
+              <option value="">Select Gender</option>
+              {% for g in ['Male', 'Female', 'Other'] %}
+              <option value="{{ g }}" {{ 'selected' if user and user.gender == g }}>{{ g }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="form-group">
+            <label class="form-label" for="blood_group">Blood Group <span class="required">*</span></label>
+            <select id="blood_group" name="blood_group" class="form-select" required>
+              <option value="">Select Blood Group</option>
+              {% for bg in blood_groups %}
+              <option value="{{ bg }}" {{ 'selected' if user and user.blood_group == bg }}>{{ bg }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="diseases">Medical Conditions</label>
+            <select id="diseases" name="diseases" class="form-select">
+              {% for d in diseases %}
+              <option value="{{ d }}" {{ 'selected' if user and user.diseases == d }}>{{ d }}</option>
+              {% endfor %}
+            </select>
+            <p class="form-hint">Select "None" if you have no known conditions</p>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="area">Area / Locality <span class="required">*</span></label>
+          <input type="text" id="area" name="area" class="form-input"
+                 placeholder="e.g. Banjara Hills" required
+                 value="{{ user.area if user and user.area else '' }}" />
+        </div>
+
+        <div class="grid-2">
+          <div class="form-group">
+            <label class="form-label" for="city">City <span class="required">*</span></label>
+            <input type="text" id="city" name="city" class="form-input"
+                   placeholder="e.g. Hyderabad" required
+                   value="{{ user.city if user and user.city else '' }}" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="state">State <span class="required">*</span></label>
+            <input type="text" id="state" name="state" class="form-input"
+                   placeholder="e.g. Telangana" required
+                   value="{{ user.state or (user.p_state if user else '') or '' }}" />
+          </div>
+        </div>
+
+        <!-- Read-only fields -->
+        <div class="grid-2">
+          <div class="form-group">
+            <label class="form-label" for="phone_ro">Phone Number</label>
+            <input type="tel" id="phone_ro" class="form-input"
+                   value="{{ user.phone_number if user else '' }}" readonly
+                   style="background:var(--surface); cursor:not-allowed;" />
+            <p class="form-hint">Contact support to change phone number</p>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="email_ro">Email</label>
+            <input type="email" id="email_ro" class="form-input"
+                   value="{{ user.email if user else '' }}" readonly
+                   style="background:var(--surface); cursor:not-allowed;" />
+          </div>
+        </div>
+
+        <div class="d-flex gap-12 mt-16" style="flex-wrap:wrap;">
+          <button type="submit" class="btn btn-primary btn-lg">
+            Save Profile ✓
+          </button>
+          {% if session.get('profile_complete') %}
+          <a href="{{ url_for('main.home') }}" class="btn btn-secondary btn-lg">Cancel</a>
+          {% endif %}
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

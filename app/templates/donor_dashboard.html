@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+{% block title %}Donor Dashboard{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="page-header d-flex justify-between align-center" style="flex-wrap:wrap; gap:16px;">
+    <div>
+      <h1 class="page-title">💉 Donor Dashboard</h1>
+      <p class="page-subtitle">Blood requests matching your blood group. Accept to help save a life.</p>
+    </div>
+    {% if profile %}
+    <div class="d-flex align-center gap-12">
+      <span class="blood-badge">{{ profile['blood_group'] or '?' }}</span>
+      <span class="badge {{ 'badge-available' if profile['is_available'] else 'badge-unavailable' }}">
+        {{ 'Available' if profile['is_available'] else 'Unavailable' }}
+      </span>
+      <a href="{{ url_for('profile.view_profile') }}" class="btn btn-secondary btn-sm">Update Status</a>
+    </div>
+    {% endif %}
+  </div>
+
+  {% if not profile or not profile['blood_group'] %}
+  <div class="card">
+    <div class="empty-state">
+      <div class="empty-icon">👤</div>
+      <div class="empty-title">Complete your profile first</div>
+      <div class="empty-desc">We need your blood group to show matching requests.</div>
+      <a href="{{ url_for('profile.details') }}" class="btn btn-primary">Complete Profile</a>
+    </div>
+  </div>
+  {% else %}
+
+  <!-- Active Requests -->
+  <h2 class="section-title mt-16">🔴 Active Requests Matching Your Blood Group</h2>
+
+  {% if active_requests %}
+  <div class="card mb-24">
+    {% for req in active_requests %}
+    <div class="request-card">
+      <div class="urgency-indicator urgency-{{ req['urgency'] }}"></div>
+      <div class="blood-badge blood-badge-sm">{{ req['blood_group'] }}</div>
+      <div style="flex:1; min-width:0;">
+        <div style="font-weight:600; font-size:0.9rem;">
+          {{ req['requester_name'] }} needs blood
+          <span class="badge badge-{{ req['urgency'] }}" style="margin-left:8px;">
+            {% if req['urgency'] == 'emergency' %}🚨 Emergency{% elif req['urgency'] == 'urgent' %}⚠️ Urgent{% else %}Normal{% endif %}
+          </span>
+        </div>
+        <div class="text-small text-muted mt-4">
+          🏥 {{ req['hospital'] or 'Location not specified' }} &nbsp;·&nbsp;
+          📍 {{ req['city'] or 'Unknown' }} &nbsp;·&nbsp;
+          {{ req['required_units'] }} unit{{ 's' if req['required_units'] != 1 else '' }} needed
+        </div>
+      </div>
+
+      <!-- Response -->
+      {% if req['my_response'] and req['my_response'] != 'pending' %}
+        <span class="badge badge-{{ req['my_response'] }}">
+          {{ '✅ Accepted' if req['my_response'] == 'accepted' else '❌ Declined' }}
+        </span>
+      {% else %}
+        <div class="d-flex gap-8">
+          <form method="POST" action="{{ url_for('blood.respond', request_id=req['id']) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+            <input type="hidden" name="response" value="accepted" />
+            <button type="submit" class="btn btn-success btn-sm">✅ Accept</button>
+          </form>
+          <form method="POST" action="{{ url_for('blood.respond', request_id=req['id']) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+            <input type="hidden" name="response" value="declined" />
+            <button type="submit" class="btn btn-danger btn-sm">❌ Decline</button>
+          </form>
+        </div>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="card mb-24">
+    <div class="empty-state">
+      <div class="empty-icon">🎉</div>
+      <div class="empty-title">No active requests</div>
+      <div class="empty-desc">There are no pending blood requests matching your blood group right now.</div>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- My Response History -->
+  <h2 class="section-title">📜 My Response History</h2>
+  {% if my_responses %}
+  <div class="card">
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>Blood Group</th><th>Hospital</th><th>City</th><th>Urgency</th><th>My Response</th></tr>
+        </thead>
+        <tbody>
+          {% for r in my_responses %}
+          <tr>
+            <td><span class="blood-badge blood-badge-sm">{{ r['blood_group'] }}</span></td>
+            <td>{{ r['hospital'] or '—' }}</td>
+            <td>{{ r['city'] or '—' }}</td>
+            <td><span class="badge badge-{{ r['urgency'] }}">{{ r['urgency']|capitalize }}</span></td>
+            <td>
+              <span class="badge badge-{{ r['response'] }}">
+                {{ '✅ Accepted' if r['response']=='accepted' else ('❌ Declined' if r['response']=='declined' else '⏳ Pending') }}
+              </span>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% else %}
+  <div class="card">
+    <div class="empty-state" style="padding:40px;">
+      <div class="empty-icon">📜</div>
+      <div class="empty-title">No responses yet</div>
+      <div class="empty-desc">Accept or decline a request above to see your history here.</div>
+    </div>
+  </div>
+  {% endif %}
+
+  {% endif %}
+</div>
+{% endblock %}

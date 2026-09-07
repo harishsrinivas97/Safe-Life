@@ -1,0 +1,9 @@
+.env
+*.db
+*.sqlite
+*.sqlite3
+__pycache__/
+*.pyc
+venv/
+.venv/
+ngrok_recovery_codes (1).txt

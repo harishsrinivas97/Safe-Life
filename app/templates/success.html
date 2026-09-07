@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Success{% endblock %}
+{% block content %}
+<div style="min-height:70vh; display:flex; align-items:center; justify-content:center; text-align:center; padding:40px 24px;">
+  <div class="card" style="max-width:480px; width:100%; padding:48px 40px;">
+    <div style="font-size:64px; margin-bottom:16px;">✅</div>
+    <h1 style="font-family:var(--font-head); font-size:1.75rem; font-weight:700; margin-bottom:12px;">
+      Request Sent Successfully!
+    </h1>
+    <p style="color:var(--text-sec); line-height:1.7; margin-bottom:32px;">
+      Your blood request has been sent to matching donors in your area. They will receive an SMS notification immediately. 
+      <strong>Please check your Requester Dashboard for live updates.</strong>
+    </p>
+    <div class="d-flex gap-12" style="justify-content:center; flex-wrap:wrap;">
+      <a href="{{ url_for('blood.my_requests') }}" class="btn btn-primary">View My Requests →</a>
+      <a href="{{ url_for('main.home') }}" class="btn btn-secondary">Go to Dashboard</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

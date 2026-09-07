@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Log in to BloodNeed – Emergency blood donation platform." />
+  <meta name="csrf-token" content="{{ csrf_token() }}" />
+  <title>Login | BloodNeed</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Merriweather:wght@400;700;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+</head>
+<body>
+
+  <!-- Flash messages for standalone auth pages -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="flash-container" role="alert">
+      {% for category, message in messages %}
+      <div class="flash flash-{{ category if category in ['success','danger','warning','info'] else 'info' }}">
+        <span class="flash-icon">{% if category == 'success' %}✅{% elif category == 'danger' %}❌{% elif category == 'warning' %}⚠️{% else %}ℹ️{% endif %}</span>
+        <span class="flash-text">{{ message }}</span>
+        <span class="flash-close">×</span>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+  {% endwith %}
+
+  <div class="auth-page">
+
+    <!-- LEFT PANEL -->
+    <div class="auth-panel-left">
+      <div>
+        <div class="auth-logo">🩸 BloodNeed</div>
+        <p class="auth-tagline">
+          Connecting donors with patients in need. Every drop saves a life.
+        </p>
+        <div class="auth-features">
+          <div class="auth-feature">
+            <div class="auth-feature-icon">🏥</div>
+            <span>Connect with hospitals and blood banks instantly</span>
+          </div>
+          <div class="auth-feature">
+            <div class="auth-feature-icon">📱</div>
+            <span>Get instant SMS notifications when blood is needed</span>
+          </div>
+          <div class="auth-feature">
+            <div class="auth-feature-icon">🔍</div>
+            <span>Find compatible donors by blood group and location</span>
+          </div>
+          <div class="auth-feature">
+            <div class="auth-feature-icon">🛡️</div>
+            <span>Secure, private, and HIPAA-conscious platform</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT PANEL -->
+    <div class="auth-panel-right">
+      <div class="auth-form-box page-animate">
+        <h1 class="auth-form-title">Welcome back</h1>
+        <p class="auth-form-subtitle">Sign in to your BloodNeed account</p>
+
+        {% if errors %}
+        <ul class="form-error-list" role="alert">
+          {% for e in errors %}<li>{{ e }}</li>{% endfor %}
+        </ul>
+        {% endif %}
+
+        <form method="POST" action="{{ url_for('auth.login') }}" novalidate>
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+
+          <div class="form-group">
+            <label class="form-label" for="email">Email Address <span class="required">*</span></label>
+            <div class="input-group">
+              <span class="input-icon">📧</span>
+              <input type="email" id="email" name="email" class="form-input"
+                     placeholder="you@example.com" required autocomplete="email" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="password">Password <span class="required">*</span></label>
+            <div class="input-group-password">
+              <input type="password" id="password" name="password" class="form-input"
+                     placeholder="Your password" required autocomplete="current-password" />
+              <button type="button" class="password-toggle" aria-label="Toggle password visibility">👁️</button>
+            </div>
+          </div>
+
+          <div class="d-flex justify-between align-center mt-8 mb-16">
+            <label class="d-flex align-center gap-8" style="cursor:pointer; font-size:0.85rem; color:var(--text-sec);">
+              <input type="checkbox" id="remember" name="remember" /> Remember me
+            </label>
+            <a href="{{ url_for('auth.forgot') }}" style="font-size:0.85rem; font-weight:600;">Forgot password?</a>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-block btn-lg" id="login-btn">
+            Sign In →
+          </button>
+        </form>
+
+        <div class="auth-footer">
+          Don't have an account? <a href="{{ url_for('auth.register') }}">Create one free</a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

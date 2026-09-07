@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<!-- Hero -->
+<div class="dashboard-hero">
+  <div class="container hero-content">
+    <div class="hero-badge">🩸 BloodNeed Dashboard</div>
+    <h1 class="hero-title">Welcome back, {{ session.get('name', 'User') }}! 👋</h1>
+    <p class="hero-subtitle">
+      {% if user and user['blood_group'] %}
+        Your blood group is <strong>{{ user['blood_group'] }}</strong>.
+        {% if user['is_available'] %}You are currently <strong>available</strong> to donate. Thank you!{% else %}You are marked as <strong>unavailable</strong> right now.{% endif %}
+      {% else %}
+        Complete your profile to start donating and requesting blood.
+      {% endif %}
+    </p>
+    <div class="hero-actions">
+      <a href="{{ url_for('blood.select_blood') }}" class="btn btn-ghost btn-lg">🩸 Request Blood</a>
+      <a href="{{ url_for('blood.donor_dashboard') }}" class="btn btn-ghost">💉 Donor Board</a>
+      {% if not session.get('profile_complete') %}
+      <a href="{{ url_for('profile.details') }}" class="btn btn-ghost">📝 Complete Profile</a>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- Stats Row -->
+<div class="container">
+  <div class="section">
+    <div class="grid-4 mt-16">
+      <div class="stat-card">
+        <div class="stat-icon red">🩸</div>
+        <div class="stat-content">
+          <div class="stat-value">{{ user['blood_group'] if user and user['blood_group'] else '—' }}</div>
+          <div class="stat-label">Your Blood Group</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon blue">📋</div>
+        <div class="stat-content">
+          <div class="stat-value">{{ total_requests }}</div>
+          <div class="stat-label">Requests Sent</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon green">✅</div>
+        <div class="stat-content">
+          <div class="stat-value">{{ accepted_donors }}</div>
+          <div class="stat-label">Donors Accepted</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon amber">🔔</div>
+        <div class="stat-content">
+          <div class="stat-value">{{ matching_requests }}</div>
+          <div class="stat-label">Need Your Blood</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="section">
+    <h2 class="section-title">Quick Actions</h2>
+    <div class="grid-3">
+      <a href="{{ url_for('blood.select_blood') }}" class="action-card">
+        <div class="action-icon">🩸</div>
+        <div class="action-title">Request Blood</div>
+        <div class="action-desc">Find compatible donors and send emergency SMS notifications instantly.</div>
+      </a>
+      <a href="{{ url_for('blood.donor_dashboard') }}" class="action-card">
+        <div class="action-icon">💉</div>
+        <div class="action-title">Donor Dashboard</div>
+        <div class="action-desc">See blood requests matching your type and respond to save a life.</div>
+      </a>
+      <a href="{{ url_for('bmi.calculator') }}" class="action-card">
+        <div class="action-icon">📊</div>
+        <div class="action-title">BMI Calculator</div>
+        <div class="action-desc">Check your Body Mass Index to know if you're eligible to donate blood.</div>
+      </a>
+      <a href="{{ url_for('profile.view_profile') }}" class="action-card">
+        <div class="action-icon">👤</div>
+        <div class="action-title">My Profile</div>
+        <div class="action-desc">Update your blood group, location, and donor availability status.</div>
+      </a>
+      <a href="{{ url_for('blood.my_requests') }}" class="action-card">
+        <div class="action-icon">📋</div>
+        <div class="action-title">My Requests</div>
+        <div class="action-desc">Track all your blood requests and see donor responses.</div>
+      </a>
+      <a href="{{ url_for('profile.details') }}" class="action-card">
+        <div class="action-icon">✏️</div>
+        <div class="action-title">Update Details</div>
+        <div class="action-desc">Keep your health information and contact details up to date.</div>
+      </a>
+    </div>
+  </div>
+
+  <!-- Recent Requests -->
+  <div class="section">
+    <h2 class="section-title">Recent Blood Requests</h2>
+    <div class="card">
+      {% if recent_requests %}
+        {% for req in recent_requests %}
+        <div class="request-card">
+          <div class="urgency-indicator urgency-{{ req['urgency'] }}"></div>
+          <div class="blood-badge blood-badge-sm">{{ req['blood_group'] }}</div>
+          <div style="flex:1;">
+            <div style="font-weight:600; font-size:0.9rem;">
+              {{ req['city'] or 'Unknown City' }}
+              <span class="badge badge-{{ req['urgency'] }}" style="margin-left:8px;">{{ req['urgency']|capitalize }}</span>
+            </div>
+            <div class="text-muted text-small">
+              Donors contacted: {{ req['donors_contacted'] }} &nbsp;·&nbsp;
+              Status: {{ req['status']|capitalize }}
+            </div>
+          </div>
+          <span class="badge badge-{{ req['status'] }}">{{ req['status']|capitalize }}</span>
+        </div>
+        {% endfor %}
+        <div class="card-footer text-center">
+          <a href="{{ url_for('blood.my_requests') }}" class="btn btn-secondary btn-sm">View All Requests →</a>
+        </div>
+      {% else %}
+        <div class="empty-state">
+          <div class="empty-icon">🩸</div>
+          <div class="empty-title">No requests yet</div>
+          <div class="empty-desc">When you need blood, click "Request Blood" above to find donors instantly.</div>
+          <a href="{{ url_for('blood.select_blood') }}" class="btn btn-primary">Request Blood Now</a>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Blood Compatibility Info -->
+  <div class="section">
+    <h2 class="section-title">Blood Compatibility Chart</h2>
+    <div class="card">
+      <div class="card-body">
+        <div style="overflow-x:auto;">
+          <table>
+            <thead>
+              <tr>
+                <th>Blood Group</th>
+                <th>Can Donate To</th>
+                <th>Can Receive From</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for row in [
+                ('O-',  'Everyone (Universal Donor)',           'O-'),
+                ('O+',  'O+, A+, B+, AB+',                     'O+, O-'),
+                ('A-',  'A-, A+, AB-, AB+',                     'A-, O-'),
+                ('A+',  'A+, AB+',                              'A+, A-, O+, O-'),
+                ('B-',  'B-, B+, AB-, AB+',                     'B-, O-'),
+                ('B+',  'B+, AB+',                              'B+, B-, O+, O-'),
+                ('AB-', 'AB-, AB+',                             'AB-, A-, B-, O-'),
+                ('AB+', 'AB+ (Universal Recipient)',             'Everyone'),
+              ] %}
+              <tr>
+                <td><span class="blood-badge blood-badge-sm">{{ row[0] }}</span></td>
+                <td style="font-size:0.85rem;">{{ row[1] }}</td>
+                <td style="font-size:0.85rem;">{{ row[2] }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

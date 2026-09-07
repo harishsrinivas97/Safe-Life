@@ -1,0 +1,200 @@
+{% extends "base.html" %}
+{% block title %}Request Blood{% endblock %}
+
+{% block content %}
+<div class="container-md">
+  <div class="page-header">
+    <h1 class="page-title">🩸 Request Blood</h1>
+    <p class="page-subtitle">Fill in the details below and we'll notify compatible donors near you via SMS.</p>
+  </div>
+
+  {% if errors %}
+  <ul class="form-error-list" role="alert">
+    {% for e in errors %}<li>{{ e }}</li>{% endfor %}
+  </ul>
+  {% endif %}
+
+  <div class="grid-2" style="align-items:start;">
+
+    <!-- LEFT: Form -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Blood Request Details</span>
+      </div>
+      <div class="card-body">
+        <form method="POST" action="{{ url_for('blood.select_blood') }}" id="bloodRequestForm" novalidate>
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+          <input type="hidden" name="blood_group" id="selectedGroupHidden" />
+
+          <div class="form-group">
+            <label class="form-label">Select Required Blood Group <span class="required">*</span></label>
+            <div class="blood-grid" id="bloodGrid">
+              {% for bg in blood_groups %}
+              <div class="blood-pill" data-group="{{ bg }}" role="button" tabindex="0"
+                   aria-label="{{ bg }} blood group" onclick="selectSingleBlood(this)">{{ bg }}</div>
+              {% endfor %}
+            </div>
+            <p class="form-hint" id="selectedBloodLabel">Click a blood group to select it</p>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="urgency">Urgency Level <span class="required">*</span></label>
+            <select id="urgency" name="urgency" class="form-select" required>
+              {% for value, label in urgency_choices %}
+              <option value="{{ value }}">{{ label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="required_units">Units Required</label>
+            <select id="required_units" name="required_units" class="form-select">
+              {% for u in unit_choices %}
+              <option value="{{ u }}" {{ 'selected' if u == 1 }}>{{ u }} unit{{ 's' if u > 1 }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="hospital">Hospital Name</label>
+            <div class="input-group">
+              <span class="input-icon">🏥</span>
+              <input type="text" id="hospital" name="hospital" class="form-input"
+                     placeholder="e.g. Apollo Hospital" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="location">Location / Address</label>
+            <input type="text" id="location" name="location" class="form-input"
+                   placeholder="Hospital address or area" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="message">Additional Message</label>
+            <textarea id="message" name="message" class="form-textarea"
+                      placeholder="Any additional information for donors..."></textarea>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-block btn-lg" id="submitRequestBtn"
+                  onclick="return validateBloodRequest()">
+            🩸 Send to Donors
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- RIGHT: Compatibility Guide -->
+    <div style="display:flex; flex-direction:column; gap:20px;">
+      <div class="card">
+        <div class="card-header"><span class="card-title">🔬 Auto Compatibility Helper</span></div>
+        <div class="card-body">
+          <div class="form-group">
+            <label class="form-label" for="patientBloodGroup">Patient's Blood Group</label>
+            <select id="patientBloodGroup" class="form-select" onchange="autoSelectBloodGroups()">
+              <option value="">Select to auto-highlight donors</option>
+              {% for bg in blood_groups %}
+              <option value="{{ bg }}">{{ bg }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <p class="text-muted text-small">
+            Selecting the patient's blood group will automatically highlight which donor blood groups are compatible.
+          </p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><span class="card-title">ℹ️ How It Works</span></div>
+        <div class="card-body">
+          <ol style="padding-left:20px; display:flex; flex-direction:column; gap:12px;">
+            <li style="font-size:0.875rem; color:var(--text-sec);">Select the required blood group</li>
+            <li style="font-size:0.875rem; color:var(--text-sec);">Choose urgency level (Emergency sends priority SMS)</li>
+            <li style="font-size:0.875rem; color:var(--text-sec);">Add hospital and location details</li>
+            <li style="font-size:0.875rem; color:var(--text-sec);">Click "Send to Donors" — matching donors get an SMS instantly</li>
+            <li style="font-size:0.875rem; color:var(--text-sec);">Track responses in your <a href="{{ url_for('blood.my_requests') }}">Requester Dashboard</a></li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="card" style="border-left:4px solid var(--danger);">
+        <div class="card-body">
+          <p style="font-size:0.85rem; color:var(--text-sec); line-height:1.7;">
+            ⚕️ <strong>Medical Note:</strong> Always verify blood compatibility with hospital staff before transfusion.
+            This platform connects you with potential donors — final medical decisions rest with healthcare professionals.
+          </p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  const COMPATIBLE = {
+    'A+':  ['A+','A-','O+','O-'],
+    'A-':  ['A-','O-'],
+    'B+':  ['B+','B-','O+','O-'],
+    'B-':  ['B-','O-'],
+    'O+':  ['O+','O-'],
+    'O-':  ['O-'],
+    'AB+': ['A+','A-','B+','B-','O+','O-','AB+','AB-'],
+    'AB-': ['A-','B-','O-','AB-'],
+  };
+
+  function selectSingleBlood(el) {
+    document.querySelectorAll('.blood-pill').forEach(p => {
+      if (!p.classList.contains('disabled')) p.classList.remove('selected');
+    });
+    if (!el.classList.contains('disabled')) {
+      el.classList.add('selected');
+      document.getElementById('selectedGroupHidden').value = el.dataset.group;
+      document.getElementById('selectedBloodLabel').textContent = 'Selected: ' + el.dataset.group;
+    }
+  }
+
+  function autoSelectBloodGroups() {
+    const bg = document.getElementById('patientBloodGroup').value;
+    const compat = COMPATIBLE[bg] || [];
+    document.querySelectorAll('.blood-pill').forEach(p => {
+      p.classList.remove('selected','disabled');
+      if (!bg) return;
+      if (compat.includes(p.dataset.group)) {
+        p.classList.add('selected');
+      } else {
+        p.classList.add('disabled');
+      }
+    });
+    // Set first selected
+    const first = document.querySelector('.blood-pill.selected');
+    if (first) {
+      document.getElementById('selectedGroupHidden').value = first.dataset.group;
+      document.getElementById('selectedBloodLabel').textContent = 'Compatible donors: ' + compat.join(', ');
+    }
+  }
+
+  function validateBloodRequest() {
+    const bg = document.getElementById('selectedGroupHidden').value;
+    if (!bg) {
+      showToast('Please select a blood group first.', 'warning');
+      return false;
+    }
+    // Make sure the hidden input has the first selected blood pill
+    const selected = document.querySelectorAll('.blood-pill.selected');
+    if (selected.length > 0) {
+      document.getElementById('selectedGroupHidden').value = selected[0].dataset.group;
+    }
+    return true;
+  }
+
+  // Keyboard support for blood pills
+  document.querySelectorAll('.blood-pill').forEach(pill => {
+    pill.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectSingleBlood(pill); }
+    });
+  });
+</script>
+{% endblock %}

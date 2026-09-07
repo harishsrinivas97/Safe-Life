@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Create a BloodNeed account and join thousands of life-savers." />
+  <meta name="csrf-token" content="{{ csrf_token() }}" />
+  <title>Register | BloodNeed</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Merriweather:wght@400;700;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+</head>
+<body>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="flash-container" role="alert">
+      {% for category, message in messages %}
+      <div class="flash flash-{{ category if category in ['success','danger','warning','info'] else 'info' }}">
+        <span class="flash-icon">{% if category == 'success' %}✅{% elif category == 'danger' %}❌{% elif category == 'warning' %}⚠️{% else %}ℹ️{% endif %}</span>
+        <span class="flash-text">{{ message }}</span>
+        <span class="flash-close">×</span>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+  {% endwith %}
+
+  <div class="auth-page">
+
+    <!-- LEFT PANEL -->
+    <div class="auth-panel-left">
+      <div>
+        <div class="auth-logo">🩸 BloodNeed</div>
+        <p class="auth-tagline">Join our community of blood donors and help save lives every day.</p>
+        <div class="auth-features">
+          <div class="auth-feature">
+            <div class="auth-feature-icon">❤️</div>
+            <span>Become a verified blood donor in your area</span>
+          </div>
+          <div class="auth-feature">
+            <div class="auth-feature-icon">🔔</div>
+            <span>Get notified when your blood type is urgently needed</span>
+          </div>
+          <div class="auth-feature">
+            <div class="auth-feature-icon">📍</div>
+            <span>Location-aware matching by city and state</span>
+          </div>
+          <div class="auth-feature">
+            <div class="auth-feature-icon">🆓</div>
+            <span>100% free — always</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT PANEL -->
+    <div class="auth-panel-right">
+      <div class="auth-form-box page-animate">
+        <h1 class="auth-form-title">Create your account</h1>
+        <p class="auth-form-subtitle">Free forever. No credit card needed.</p>
+
+        {% if errors %}
+        <ul class="form-error-list" role="alert">
+          {% for e in errors %}<li>{{ e }}</li>{% endfor %}
+        </ul>
+        {% endif %}
+
+        <form method="POST" action="{{ url_for('auth.register') }}" novalidate>
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+
+          <div class="form-group">
+            <label class="form-label" for="name">Full Name <span class="required">*</span></label>
+            <div class="input-group">
+              <span class="input-icon">👤</span>
+              <input type="text" id="name" name="name" class="form-input"
+                     placeholder="Ravi Kumar" required
+                     value="{{ form_data.get('name', '') }}" autocomplete="name" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="email">Email Address <span class="required">*</span></label>
+            <div class="input-group">
+              <span class="input-icon">📧</span>
+              <input type="email" id="email" name="email" class="form-input"
+                     placeholder="you@example.com" required
+                     value="{{ form_data.get('email', '') }}" autocomplete="email" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="phone_number">Phone Number <span class="required">*</span></label>
+            <div class="input-group">
+              <span class="input-icon">📱</span>
+              <input type="tel" id="phone_number" name="phone_number" class="form-input"
+                     placeholder="10-digit mobile number" pattern="\d{10}"
+                     maxlength="10" required
+                     value="{{ form_data.get('phone_number', '') }}" autocomplete="tel" />
+            </div>
+            <p class="form-hint">Enter 10-digit Indian mobile number without country code</p>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="state">State <span class="required">*</span></label>
+            <div class="input-group">
+              <span class="input-icon">📍</span>
+              <input type="text" id="state" name="state" class="form-input"
+                     placeholder="Andhra Pradesh" required
+                     value="{{ form_data.get('state', '') }}" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="password">Password <span class="required">*</span></label>
+            <div class="input-group-password">
+              <input type="password" id="password" name="password" class="form-input"
+                     placeholder="Create a strong password" required autocomplete="new-password" />
+              <button type="button" class="password-toggle" aria-label="Toggle password">👁️</button>
+            </div>
+            <div class="password-strength mt-8">
+              <div class="strength-bar"><div class="strength-fill"></div></div>
+              <span class="strength-text"></span>
+            </div>
+            <p class="form-hint">Min 8 chars with uppercase, lowercase, number & special character</p>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-block btn-lg mt-8">
+            Create Account →
+          </button>
+        </form>
+
+        <div class="auth-footer">
+          Already have an account? <a href="{{ url_for('auth.login') }}">Sign in</a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

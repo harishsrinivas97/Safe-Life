@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="csrf-token" content="{{ csrf_token() }}" />
+  <title>Forgot Password | BloodNeed</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Merriweather:wght@700;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+</head>
+<body>
+  {% with messages = get_flashed_messages(with_categories=true) %}{% if messages %}
+  <div class="flash-container">{% for c,m in messages %}<div class="flash flash-{{c if c in ['success','danger','warning','info'] else 'info'}}"><span class="flash-icon">{% if c=='success'%}✅{% elif c=='danger'%}❌{% elif c=='warning'%}⚠️{% else %}ℹ️{% endif %}</span><span class="flash-text">{{m}}</span><span class="flash-close">×</span></div>{% endfor %}</div>
+  {% endif %}{% endwith %}
+
+  <div class="auth-page">
+    <div class="auth-panel-left">
+      <div>
+        <div class="auth-logo">🩸 BloodNeed</div>
+        <p class="auth-tagline">Don't worry — it happens! We'll send an OTP to reset your password safely.</p>
+        <div class="auth-features">
+          <div class="auth-feature"><div class="auth-feature-icon">📧</div><span>OTP delivered to your registered email</span></div>
+          <div class="auth-feature"><div class="auth-feature-icon">⏱️</div><span>OTP expires in 5 minutes for your security</span></div>
+          <div class="auth-feature"><div class="auth-feature-icon">🔐</div><span>Password is stored securely with encryption</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="auth-panel-right">
+      <div class="auth-form-box page-animate">
+        <h1 class="auth-form-title">Forgot Password?</h1>
+        <p class="auth-form-subtitle">Enter your email and we'll send you a one-time password.</p>
+
+        {% if errors %}<ul class="form-error-list">{% for e in errors %}<li>{{e}}</li>{% endfor %}</ul>{% endif %}
+
+        <form method="POST" action="{{ url_for('auth.forgot') }}" novalidate>
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+          <div class="form-group">
+            <label class="form-label" for="email">Registered Email <span class="required">*</span></label>
+            <div class="input-group">
+              <span class="input-icon">📧</span>
+              <input type="email" id="email" name="email" class="form-input" placeholder="you@example.com" required autocomplete="email" />
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary btn-block btn-lg">Send OTP →</button>
+        </form>
+
+        <div class="auth-footer"><a href="{{ url_for('auth.login') }}">← Back to Login</a></div>
+      </div>
+    </div>
+  </div>
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

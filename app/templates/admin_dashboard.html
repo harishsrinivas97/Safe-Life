@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="page-header">
+    <h1 class="page-title">⚙️ Admin Dashboard</h1>
+    <p class="page-subtitle">Platform overview and user management.</p>
+  </div>
+
+  <!-- Stats -->
+  <div class="grid-4 mb-32">
+    <div class="stat-card">
+      <div class="stat-icon blue">👥</div>
+      <div class="stat-content">
+        <div class="stat-value">{{ total_users }}</div>
+        <div class="stat-label">Total Users</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon red">🩸</div>
+      <div class="stat-content">
+        <div class="stat-value">{{ total_requests }}</div>
+        <div class="stat-label">Total Requests</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon amber">⏳</div>
+      <div class="stat-content">
+        <div class="stat-value">{{ pending_requests }}</div>
+        <div class="stat-label">Pending Requests</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon green">💉</div>
+      <div class="stat-content">
+        <div class="stat-value">{{ available_donors }}</div>
+        <div class="stat-label">Available Donors</div>
+      </div>
+    </div>
+  </div>
+
+  {% if emergency_requests > 0 %}
+  <div class="card mb-24" style="border-left:4px solid var(--danger);">
+    <div class="card-body">
+      <p style="color:var(--danger); font-weight:700; font-size:1rem;">
+        🚨 {{ emergency_requests }} Emergency request{{ 's' if emergency_requests != 1 }} active right now!
+      </p>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Recent Users -->
+  <div class="card mb-32">
+    <div class="card-header">
+      <span class="card-title">👥 Recent Users</span>
+      <span class="badge badge-normal">{{ total_users }} total</span>
+    </div>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>Name</th><th>Email</th><th>Blood Group</th><th>City</th><th>Status</th></tr>
+        </thead>
+        <tbody>
+          {% for u in users %}
+          <tr>
+            <td style="font-weight:500;">{{ u['name'] }}</td>
+            <td class="text-muted text-small">{{ u['email'] }}</td>
+            <td>{% if u['blood_group'] %}<span class="blood-badge blood-badge-sm">{{ u['blood_group'] }}</span>{% else %}—{% endif %}</td>
+            <td>{{ u['city'] or '—' }}</td>
+            <td><span class="badge {{ 'badge-accepted' if u['is_active'] else 'badge-declined' }}">{{ 'Active' if u['is_active'] else 'Blocked' }}</span></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Recent Requests -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">🩸 Recent Blood Requests</span>
+      <span class="badge badge-normal">{{ total_requests }} total</span>
+    </div>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>#</th><th>Requester</th><th>Blood Group</th><th>City</th><th>Urgency</th><th>Status</th></tr>
+        </thead>
+        <tbody>
+          {% for r in requests %}
+          <tr>
+            <td class="text-muted text-small">#{{ r['id'] }}</td>
+            <td style="font-weight:500;">{{ r['requester_name'] }}</td>
+            <td><span class="blood-badge blood-badge-sm">{{ r['blood_group'] }}</span></td>
+            <td>{{ r['city'] or '—' }}</td>
+            <td><span class="badge badge-{{ r['urgency'] }}">{{ r['urgency']|capitalize }}</span></td>
+            <td><span class="badge badge-{{ r['status'] }}">{{ r['status']|capitalize }}</span></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

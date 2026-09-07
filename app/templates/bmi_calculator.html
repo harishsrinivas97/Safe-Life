@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+{% block title %}BMI Calculator{% endblock %}
+
+{% block content %}
+<div class="container-sm">
+  <div class="page-header text-center">
+    <h1 class="page-title">📊 BMI Calculator</h1>
+    <p class="page-subtitle">Calculate your Body Mass Index to check blood donation eligibility.</p>
+  </div>
+
+  <div class="grid-2" style="align-items:start; gap:24px;">
+
+    <!-- Calculator -->
+    <div class="card">
+      <div class="card-header"><span class="card-title">Enter Your Measurements</span></div>
+      <div class="card-body">
+        {% if errors %}
+        <ul class="form-error-list">{% for e in errors %}<li>{{ e }}</li>{% endfor %}</ul>
+        {% endif %}
+
+        <form method="POST" action="{{ url_for('bmi.calculator') }}" novalidate>
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+
+          <div class="form-group">
+            <label class="form-label" for="weight">Weight (kg) <span class="required">*</span></label>
+            <div class="input-group">
+              <span class="input-icon">⚖️</span>
+              <input type="number" id="weight" name="weight" class="form-input"
+                     placeholder="e.g. 70" min="1" max="500" step="0.1"
+                     value="{{ request.form.get('weight', '') }}" required />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="height">Height (cm) <span class="required">*</span></label>
+            <div class="input-group">
+              <span class="input-icon">📏</span>
+              <input type="number" id="height" name="height" class="form-input"
+                     placeholder="e.g. 170" min="50" max="300" step="0.1"
+                     value="{{ request.form.get('height', '') }}" required />
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-block btn-lg">Calculate BMI →</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Result -->
+    {% if bmi %}
+    <div class="card">
+      <div class="card-header"><span class="card-title">Your BMI Result</span></div>
+      <div class="bmi-result">
+        <div class="bmi-value-display" style="color:
+          {% if color == 'success' %}var(--success)
+          {% elif color == 'danger' %}var(--danger)
+          {% else %}var(--warning){% endif %};">
+          {{ bmi }}
+        </div>
+        <div class="bmi-category" style="color:
+          {% if color == 'success' %}var(--success)
+          {% elif color == 'danger' %}var(--danger)
+          {% else %}var(--warning){% endif %};">
+          {{ category }}
+        </div>
+
+        <!-- BMI Bar -->
+        <div class="bmi-bar" style="position:relative;">
+          <div class="bmi-pointer" id="bmiPointer"
+               data-value="{{ bmi }}"
+               style="left: {{ [[(bmi - 10) / 30 * 100, 0]|max, 100]|min }}%;"></div>
+        </div>
+        <div class="d-flex justify-between text-small text-muted mt-8">
+          <span>Underweight<br>&lt;18.5</span>
+          <span>Normal<br>18.5–24.9</span>
+          <span>Overweight<br>25–29.9</span>
+          <span>Obese<br>30+</span>
+        </div>
+
+        <!-- Donation eligibility -->
+        <div class="mt-24" style="padding:16px; border-radius:var(--radius);
+          background:{{ 'var(--red-xlight)' if color == 'danger' or (bmi < 17.5 or bmi > 40) else '#F0FFF4' }};">
+          {% if 17.5 <= bmi <= 40 %}
+          <p style="color:var(--success); font-weight:600; font-size:0.9rem;">
+            ✅ Your BMI is generally within the acceptable range for blood donation.
+          </p>
+          {% else %}
+          <p style="color:var(--danger); font-weight:600; font-size:0.9rem;">
+            ⚠️ Your BMI may affect eligibility. Please consult your doctor before donating.
+          </p>
+          {% endif %}
+          <p class="text-small text-muted mt-8">Final eligibility is determined by medical staff at the donation center.</p>
+        </div>
+      </div>
+    </div>
+    {% else %}
+    <div class="card">
+      <div class="card-body">
+        <!-- BMI Reference Table -->
+        <h3 class="card-title mb-16">📋 BMI Reference Chart</h3>
+        <table>
+          <thead>
+            <tr><th>BMI Range</th><th>Category</th><th>Donation</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Below 17.5</td><td>Severely Underweight</td><td><span class="badge badge-declined">Not Eligible</span></td></tr>
+            <tr><td>17.5 – 18.4</td><td>Underweight</td><td><span class="badge badge-pending">Consult Doctor</span></td></tr>
+            <tr><td>18.5 – 24.9</td><td>Normal Weight</td><td><span class="badge badge-accepted">Eligible</span></td></tr>
+            <tr><td>25.0 – 29.9</td><td>Overweight</td><td><span class="badge badge-accepted">Eligible</span></td></tr>
+            <tr><td>30.0 – 39.9</td><td>Obese</td><td><span class="badge badge-pending">Consult Doctor</span></td></tr>
+            <tr><td>40+</td><td>Severely Obese</td><td><span class="badge badge-declined">Not Eligible</span></td></tr>
+          </tbody>
+        </table>
+        <p class="text-small text-muted mt-16">
+          ⚕️ BMI is one of many factors assessed during donation screening. Final decision is made by medical professionals.
+        </p>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

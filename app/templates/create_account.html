@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Create Account | My App</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #0a66c2; /* Professional blue */
+      --dark: #111;
+      --light: #fff;
+      --bg: #f5f7fa;
+    }
+
+    body {
+      font-family: "Inter", Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: var(--bg);
+      color: var(--dark);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    /* Card */
+    .form-container {
+      width: 100%;
+      max-width: 420px;
+      padding: 40px;
+      background: var(--light);
+      border-radius: 12px;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+      animation: fadeIn 0.5s ease-in-out;
+    }
+
+    .form-container h2 {
+      margin-bottom: 20px;
+      color: var(--primary);
+      text-align: center;
+      font-size: 1.8rem;
+    }
+
+    /* Error */
+    .error {
+      background: #ffeaea;
+      color: #b30000;
+      padding: 10px;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      margin-bottom: 15px;
+      text-align: center;
+    }
+
+    /* Inputs */
+    input {
+      width: 100%;
+      padding: 14px;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 1rem;
+      transition: all 0.2s ease;
+    }
+    input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(10, 102, 194, 0.2);
+      outline: none;
+    }
+
+    /* Button */
+    button {
+      width: 100%;
+      padding: 14px;
+      margin-top: 10px;
+      background: var(--primary);
+      color: var(--light);
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    button:hover {
+      background: #004182;
+    }
+
+    /* Link */
+    p {
+      margin-top: 15px;
+      font-size: 0.95rem;
+      text-align: center;
+      color: #555;
+    }
+    p a {
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: 600;
+    }
+    p a:hover {
+      text-decoration: underline;
+    }
+
+    /* Animations */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <div class="form-container">
+    <h2>Create Account</h2>
+
+    {% if error %}
+      <div class="error">{{ error }}</div>
+    {% endif %}
+
+    <form method="POST">
+      <input type="text" name="phone_number" placeholder="Phone Number" maxlength="10" required />
+      <input type="password" name="password" placeholder="Password" required />
+      <button type="submit">Create Account</button>
+    </form>
+
+    <p>
+      Already have an account? <a href="{{ url_for('auth.login') }}">Login</a>
+    </p>
+  </div>
+</body>
+</html>

@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}My Blood Requests{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="page-header d-flex justify-between align-center" style="flex-wrap:wrap; gap:16px;">
+    <div>
+      <h1 class="page-title">📋 My Blood Requests</h1>
+      <p class="page-subtitle">Track all your blood requests and donor responses.</p>
+    </div>
+    <a href="{{ url_for('blood.select_blood') }}" class="btn btn-primary">+ New Request</a>
+  </div>
+
+  {% if requests %}
+  <div class="card">
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Blood Group</th>
+            <th>Location</th>
+            <th>Urgency</th>
+            <th>Donors Contacted</th>
+            <th>Accepted</th>
+            <th>Declined</th>
+            <th>Pending</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for req in requests %}
+          <tr>
+            <td class="text-muted text-small">#{{ req['id'] }}</td>
+            <td><span class="blood-badge blood-badge-sm">{{ req['blood_group'] }}</span></td>
+            <td>
+              <div style="font-weight:500;">{{ req['city'] or '—' }}</div>
+              {% if req['hospital'] %}
+              <div class="text-small text-muted">{{ req['hospital'] }}</div>
+              {% endif %}
+            </td>
+            <td>
+              <span class="badge badge-{{ req['urgency'] }}">
+                {% if req['urgency'] == 'emergency' %}🚨{% elif req['urgency'] == 'urgent' %}⚠️{% endif %}
+                {{ req['urgency']|capitalize }}
+              </span>
+            </td>
+            <td><span class="badge badge-normal">{{ req['donors_contacted'] }}</span></td>
+            <td><span class="badge badge-accepted">{{ req['accepted'] }}</span></td>
+            <td><span class="badge badge-declined">{{ req['declined'] }}</span></td>
+            <td><span class="badge badge-pending">{{ req['pending'] }}</span></td>
+            <td><span class="badge badge-{{ req['status'] }}">{{ req['status']|capitalize }}</span></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% else %}
+  <div class="card">
+    <div class="empty-state">
+      <div class="empty-icon">🩸</div>
+      <div class="empty-title">No blood requests yet</div>
+      <div class="empty-desc">Create your first blood request to find donors instantly.</div>
+      <a href="{{ url_for('blood.select_blood') }}" class="btn btn-primary">Request Blood Now</a>
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}404 – Page Not Found{% endblock %}
+{% block content %}
+<div style="min-height:70vh; display:flex; align-items:center; justify-content:center; text-align:center; padding:40px 24px;">
+  <div>
+    <div style="font-size:80px; margin-bottom:16px;">🩸</div>
+    <h1 style="font-family:var(--font-head); font-size:5rem; font-weight:900; color:var(--red); line-height:1;">404</h1>
+    <h2 style="font-family:var(--font-head); font-size:1.5rem; margin-bottom:12px;">Page Not Found</h2>
+    <p style="color:var(--text-sec); max-width:400px; margin:0 auto 32px;">
+      The page you're looking for doesn't exist or has been moved. Every second matters — let's get you back on track.
+    </p>
+    <a href="{{ url_for('main.home') }}" class="btn btn-primary btn-lg">← Go Home</a>
+  </div>
+</div>
+{% endblock %}

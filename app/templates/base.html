@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="BloodNeed – Connect blood donors with people in need. Emergency blood request platform." />
+  <meta name="csrf-token" content="{{ csrf_token() }}" />
+  <title>{% block title %}BloodNeed{% endblock %} | BloodNeed</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Merriweather:wght@400;700;900&display=swap" rel="stylesheet" />
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+  <!-- ===== NAVBAR ===== -->
+  {% if session.get('user_id') %}
+  <nav class="navbar" role="navigation" aria-label="Main navigation">
+    <a href="{{ url_for('main.home') }}" class="nav-brand">
+      <div class="brand-icon" aria-hidden="true">🩸</div>
+      BloodNeed
+    </a>
+
+    <button class="nav-toggle" id="nav-toggle" aria-expanded="false" aria-controls="nav-links" aria-label="Toggle navigation">
+      <span></span><span></span><span></span>
+    </button>
+
+    <ul class="nav-links" id="nav-links" role="list">
+      <li><a href="{{ url_for('main.home') }}"
+             class="nav-link {% if request.endpoint == 'main.home' %}active{% endif %}">
+        🏠 Home
+      </a></li>
+      <li><a href="{{ url_for('blood.select_blood') }}"
+             class="nav-link {% if request.endpoint == 'blood.select_blood' %}active{% endif %}">
+        🩸 Request Blood
+      </a></li>
+      <li><a href="{{ url_for('blood.donor_dashboard') }}"
+             class="nav-link {% if request.endpoint == 'blood.donor_dashboard' %}active{% endif %}">
+        💉 Donor Board
+      </a></li>
+      <li><a href="{{ url_for('bmi.calculator') }}"
+             class="nav-link {% if request.endpoint == 'bmi.calculator' %}active{% endif %}">
+        📊 BMI
+      </a></li>
+      <li><a href="{{ url_for('profile.view_profile') }}"
+             class="nav-link {% if request.endpoint == 'profile.view_profile' %}active{% endif %}">
+        👤 Profile
+      </a></li>
+      {% if session.get('role') == 'admin' %}
+      <li><a href="{{ url_for('main.admin') }}"
+             class="nav-link {% if request.endpoint == 'main.admin' %}active{% endif %}">
+        ⚙️ Admin
+      </a></li>
+      {% endif %}
+      <li><a href="{{ url_for('auth.logout') }}" class="nav-link nav-logout">Logout</a></li>
+    </ul>
+  </nav>
+  {% endif %}
+
+  <!-- ===== FLASH MESSAGES ===== -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="flash-container" role="alert" aria-live="polite">
+      {% for category, message in messages %}
+      <div class="flash flash-{{ category if category in ['success','danger','warning','info'] else 'info' }}">
+        <span class="flash-icon">
+          {% if category == 'success' %}✅
+          {% elif category == 'danger' %}❌
+          {% elif category == 'warning' %}⚠️
+          {% else %}ℹ️{% endif %}
+        </span>
+        <span class="flash-text">{{ message }}</span>
+        <span class="flash-close" role="button" aria-label="Dismiss">×</span>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+  {% endwith %}
+
+  <!-- ===== MAIN CONTENT ===== -->
+  <main class="page-wrapper page-animate">
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- ===== FOOTER ===== -->
+  <footer class="footer">
+    <div class="container">
+      <div class="medical-disclaimer">
+        ⚕️ <strong>Medical Disclaimer:</strong> BloodNeed is a technology platform connecting donors and requesters. It does not replace professional medical advice. Blood donation eligibility and compatibility must be verified by qualified healthcare professionals.
+      </div>
+      <div class="footer-top">
+        <div>
+          <div class="footer-brand">🩸 BloodNeed</div>
+          <p class="footer-desc">Connecting lives through the gift of blood. Every donation matters. Every second counts.</p>
+        </div>
+        <div class="footer-links">
+          <a href="{{ url_for('main.home') }}">Home</a>
+          <a href="{{ url_for('blood.select_blood') }}">Request Blood</a>
+          <a href="{{ url_for('bmi.calculator') }}">BMI Calculator</a>
+          <a href="{{ url_for('profile.view_profile') }}">Profile</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        &copy; {{ 2025 }} BloodNeed. All rights reserved. &nbsp;|&nbsp; Built with ❤️ to save lives.
+      </div>
+    </div>
+  </footer>
+
+  <!-- ===== SCRIPTS ===== -->
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  {% block extra_js %}{% endblock %}
+
+</body>
+</html>

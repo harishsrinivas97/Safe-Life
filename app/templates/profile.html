@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+{% block title %}My Profile{% endblock %}
+
+{% block content %}
+<div class="container-md">
+  <div class="page-header">
+    <h1 class="page-title">👤 My Profile</h1>
+    <p class="page-subtitle">Your personal and medical information on BloodNeed.</p>
+  </div>
+
+  <div class="card">
+    <!-- Profile Header -->
+    <div class="profile-header">
+      <div class="profile-avatar">{{ (user.name or 'U')[0].upper() }}</div>
+      <div style="flex:1;">
+        <div class="profile-name">{{ user.name }}</div>
+        <div class="profile-email">{{ user.email }}</div>
+        <div class="d-flex gap-8 mt-8" style="flex-wrap:wrap;">
+          {% if user.blood_group %}
+          <span class="blood-badge blood-badge-sm">{{ user.blood_group }}</span>
+          {% endif %}
+          <span class="badge {{ 'badge-available' if user.is_available else 'badge-unavailable' }}">
+            {{ '✅ Available to Donate' if user.is_available else '❌ Unavailable' }}
+          </span>
+          <span class="badge badge-normal">{{ user.role|capitalize if user.role else 'User' }}</span>
+        </div>
+      </div>
+      <a href="{{ url_for('profile.details') }}" class="btn btn-secondary">✏️ Edit Profile</a>
+    </div>
+
+    <!-- Info Grid -->
+    <div class="profile-info-grid">
+      <div class="profile-info-item">
+        <div class="profile-info-label">📱 Phone</div>
+        <div class="profile-info-value">{{ user.phone_number or 'Not provided' }}</div>
+      </div>
+      <div class="profile-info-item">
+        <div class="profile-info-label">🎂 Age</div>
+        <div class="profile-info-value">{{ user.age or '—' }} years</div>
+      </div>
+      <div class="profile-info-item">
+        <div class="profile-info-label">⚤ Gender</div>
+        <div class="profile-info-value">{{ user.gender or '—' }}</div>
+      </div>
+      <div class="profile-info-item">
+        <div class="profile-info-label">🩸 Blood Group</div>
+        <div class="profile-info-value">
+          {% if user.blood_group %}
+          <span class="blood-badge">{{ user.blood_group }}</span>
+          {% else %}—{% endif %}
+        </div>
+      </div>
+      <div class="profile-info-item">
+        <div class="profile-info-label">📍 Area</div>
+        <div class="profile-info-value">{{ user.area or '—' }}</div>
+      </div>
+      <div class="profile-info-item">
+        <div class="profile-info-label">🏙️ City</div>
+        <div class="profile-info-value">{{ user.city or '—' }}</div>
+      </div>
+      <div class="profile-info-item">
+        <div class="profile-info-label">🗺️ State</div>
+        <div class="profile-info-value">{{ user.state or user.p_state or '—' }}</div>
+      </div>
+      <div class="profile-info-item">
+        <div class="profile-info-label">🏥 Medical Conditions</div>
+        <div class="profile-info-value">{{ user.diseases or 'None' }}</div>
+      </div>
+      {% if user.last_donation_date %}
+      <div class="profile-info-item">
+        <div class="profile-info-label">📅 Last Donation</div>
+        <div class="profile-info-value">{{ user.last_donation_date }}</div>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Availability Toggle -->
+    <div class="availability-toggle">
+      <span style="font-weight:600; font-size:0.9rem;">Donor Availability:</span>
+      <label class="toggle-switch" for="availabilityToggle" aria-label="Toggle donor availability">
+        <input type="checkbox" id="availabilityToggle"
+               {{ 'checked' if user.is_available else '' }}
+               aria-label="Available for blood donation" />
+        <span class="toggle-slider"></span>
+      </label>
+      <span id="availabilityLabel" style="font-size:0.9rem; color:var(--text-sec);">
+        {{ 'Available to Donate' if user.is_available else 'Currently Unavailable' }}
+      </span>
+    </div>
+  </div>
+
+  <!-- Quick Links -->
+  <div class="grid-3 mt-24">
+    <a href="{{ url_for('blood.select_blood') }}" class="action-card">
+      <div class="action-icon">🩸</div>
+      <div class="action-title">Request Blood</div>
+      <div class="action-desc">Find donors for an urgent blood need</div>
+    </a>
+    <a href="{{ url_for('blood.my_requests') }}" class="action-card">
+      <div class="action-icon">📋</div>
+      <div class="action-title">My Requests</div>
+      <div class="action-desc">Track all your blood requests</div>
+    </a>
+    <a href="{{ url_for('blood.donor_dashboard') }}" class="action-card">
+      <div class="action-icon">💉</div>
+      <div class="action-title">Donor Dashboard</div>
+      <div class="action-desc">Respond to requests matching your blood type</div>
+    </a>
+  </div>
+</div>
+
+<!-- CSRF for AJAX toggle -->
+<input type="hidden" id="csrfToken" value="{{ csrf_token() }}" />
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Pass CSRF token to main.js availability toggle
+  document.addEventListener('DOMContentLoaded', () => {
+    const toggle = document.getElementById('availabilityToggle');
+    if (toggle) {
+      toggle.addEventListener('change', async () => {
+        const csrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
+        try {
+          const res = await fetch('/profile/toggle-availability', {
+            method: 'POST',
+            headers: { 'X-CSRFToken': csrf, 'X-Requested-With': 'XMLHttpRequest' }
+          });
+          const data = await res.json();
+          if (data.success) {
+            const label = document.getElementById('availabilityLabel');
+            if (label) label.textContent = data.is_available ? 'Available to Donate' : 'Currently Unavailable';
+            showToast(data.is_available ? '✅ You are now available!' : '❌ Marked as unavailable.', data.is_available ? 'success' : 'info');
+          }
+        } catch(e) { toggle.checked = !toggle.checked; }
+      });
+    }
+  });
+</script>
+{% endblock %}
